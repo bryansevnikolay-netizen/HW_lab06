@@ -10,7 +10,7 @@ add_subdirectory(solver_lib)
 add_subdirectory(solver_application)
 add_subdirectory(hello_world_application)
 
-install(TARGET solver
+install(TARGETS solver
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
@@ -31,7 +31,7 @@ set(CPACK_RPM_PACKAGE_REQUIRES "glibc >= 2.28")
 set(CPACK_WIX_UPGRADE_GUID "809da3ca-e1c5-4304-9375-31ef0b5d16d3")
 
 set(CPACK_DMG_VOLUME_NAME "Solver Installer")
-set(CPACK_DMG_FORMAT "UDBZ')
+set(CPACK_DMG_FORMAT "UDBZ")
 
 set(CPACK_SOURCE_GENERATOR "TGZ;ZIP")
 set(CPACK_SOURCE_IGNORE_FILES 
