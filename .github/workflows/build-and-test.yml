@@ -1,0 +1,83 @@
+name: Build, Test and Package
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main, master ]
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - name: Linux DEB
+            os: ubuntu-latest
+            cpack_generator: DEB
+            package_ext: deb
+            need_rpm: false
+
+          - name: Linux RPM
+            os: ubuntu-latest
+            cpack_generator: RPM
+            package_ext: rpm
+            need_rpm: true
+
+          - name: Windows  MSI
+            os: windows-latest
+            cpack_generator: WIX
+            package_ext: msi
+            need_rpm: false
+
+          - name: macOS DMG
+            os: macos-latest
+            cpack_generator: DragNDrop
+            package_ext: dmg
+            need_rpm: false
+
+     steps:
+      - uses: action/checkout@v4
+      - name: Install RPM
+        if: matrix.need_rpm
+        run: sudo apt-get update && sudo apt-get install -y rpm
+
+      - name: Configure CMake
+        run: cmake -B build -S .
+
+      - name: Build
+        run: cmake --build build  --config Release -j${{ runners.os == 'Windows' && '%NUMBER_OF_PROCESSORS%' || (runners.os == 'macOS' && '$(sysctl -n hw.ncpu)' || '&(nproc)')}}   
+      - name: Create package 
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        cd build
+        cpack -G ${{ matrix.cpack_generator }}
+
+    - name: Upload to Release
+      if: startWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: build/*.${{ matrix.package_ext }}
+      env:
+        GITHUB_TOKEN ${{ secrets.GITHUB_TOKEN }}
+
+sources:
+  runs-on: ubuntu-latest
+  if: startWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: action/checkout@v4
+      - name: Create source packages
+        run: |
+          git archive --format=zip --output solver-source.zip HEAD
+          git archive --format=tar.gz --output solver-source.tar.gz HEAD
+      - name: Upload sources
+        uses: softdrops/action-gh-release@v1
+        with:
+          files: |
+            solver-source.zip
+            solver-source.tar.gz
+          env:
+            GITHUB_TOKEN ${{ secrets.GITHUB_TOKEN }}
+
+
