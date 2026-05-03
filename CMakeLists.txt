@@ -10,7 +10,7 @@ add_subdirectory(solver_lib)
 add_subdirectory(solver_application)
 add_subdirectory(hello_world_application)
 
-install(TARGET solver
+install(TARGETS solver
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
