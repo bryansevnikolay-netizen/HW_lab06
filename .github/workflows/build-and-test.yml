@@ -77,7 +77,7 @@ jobs:
           files: |
             solver-source.zip
             solver-source.tar.gz
-          env:
+        env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
