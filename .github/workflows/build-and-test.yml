@@ -62,22 +62,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-sources:
-  runs-on: ubuntu-latest
-  if: startsWith(github.ref, 'refs/tags/')
-  steps:
-    - uses: actions/checkout@v4
-    - name: Create source packages
-      run: |
-        git archive --format=zip --output solver-source.zip HEAD
-        git archive --format=tar.gz --output solver-source.tar.gz HEAD
-    - name: Upload sources
-      uses: softprops/action-gh-release@v1
-      with:
-        files: |
-          solver-source.zip
-          solver-source.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  sources:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create source packages
+        run: |
+          git archive --format=zip --output solver-source.zip HEAD
+          git archive --format=tar.gz --output solver-source.tar.gz HEAD
+      - name: Upload sources
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            solver-source.zip
+            solver-source.tar.gz
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
