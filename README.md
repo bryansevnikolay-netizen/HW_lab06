@@ -1,236 +1,165 @@
 ## Laboratory work VI
 
-Данная лабораторная работа посвещена изучению средств пакетирования на примере **CPack**
-
-```sh
-$ open https://cmake.org/Wiki/CMake:CPackPackageGenerators
-```
-
-## Tasks
-
-- [ ] 1. Создать публичный репозиторий с названием **lab06** на сервисе **GitHub**
-- [ ] 2. Выполнить инструкцию учебного материала
-- [ ] 3. Ознакомиться со ссылками учебного материала
-- [ ] 4. Составить отчет и отправить ссылку личным сообщением в **Slack**
-
-## Tutorial
-
-```sh
-$ export GITHUB_USERNAME=<имя_пользователя>
-$ export GITHUB_EMAIL=<адрес_почтового_ящика>
-$ alias edit=<nano|vi|vim|subl>
-$ alias gsed=sed # for *-nix system
-```
-
-```sh
-$ cd ${GITHUB_USERNAME}/workspace
-$ pushd .
-$ source scripts/activate
-```
-
-```sh
-$ git clone https://github.com/${GITHUB_USERNAME}/lab05 projects/lab06
-$ cd projects/lab06
-$ git remote remove origin
-$ git remote add origin https://github.com/${GITHUB_USERNAME}/lab06
-```
-
-```sh
-$ gsed -i '/project(print)/a\
-set(PRINT_VERSION_STRING "v\${PRINT_VERSION}")
-' CMakeLists.txt
-$ gsed -i '/project(print)/a\
-set(PRINT_VERSION\
-  \${PRINT_VERSION_MAJOR}.\${PRINT_VERSION_MINOR}.\${PRINT_VERSION_PATCH}.\${PRINT_VERSION_TWEAK})
-' CMakeLists.txt
-$ gsed -i '/project(print)/a\
-set(PRINT_VERSION_TWEAK 0)
-' CMakeLists.txt
-$ gsed -i '/project(print)/a\
-set(PRINT_VERSION_PATCH 0)
-' CMakeLists.txt
-$ gsed -i '/project(print)/a\
-set(PRINT_VERSION_MINOR 1)
-' CMakeLists.txt
-$ gsed -i '/project(print)/a\
-set(PRINT_VERSION_MAJOR 0)
-' CMakeLists.txt
-$ git diff
-```
-
-```sh
-$ touch DESCRIPTION && edit DESCRIPTION
-$ touch ChangeLog.md
-$ export DATE="`LANG=en_US date +'%a %b %d %Y'`"
-$ cat > ChangeLog.md <<EOF
-* ${DATE} ${GITHUB_USERNAME} <${GITHUB_EMAIL}> 0.1.0.0
-- Initial RPM release
-EOF
-```
-
-```sh
-$ cat > CPackConfig.cmake <<EOF
-include(InstallRequiredSystemLibraries)
-EOF
-```
-
-```sh
-$ cat >> CPackConfig.cmake <<EOF
-set(CPACK_PACKAGE_CONTACT ${GITHUB_EMAIL})
-set(CPACK_PACKAGE_VERSION_MAJOR \${PRINT_VERSION_MAJOR})
-set(CPACK_PACKAGE_VERSION_MINOR \${PRINT_VERSION_MINOR})
-set(CPACK_PACKAGE_VERSION_PATCH \${PRINT_VERSION_PATCH})
-set(CPACK_PACKAGE_VERSION_TWEAK \${PRINT_VERSION_TWEAK})
-set(CPACK_PACKAGE_VERSION \${PRINT_VERSION})
-set(CPACK_PACKAGE_DESCRIPTION_FILE \${CMAKE_CURRENT_SOURCE_DIR}/DESCRIPTION)
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "static C++ library for printing")
-EOF
-```
-
-```sh
-$ cat >> CPackConfig.cmake <<EOF
-
-set(CPACK_RESOURCE_FILE_LICENSE \${CMAKE_CURRENT_SOURCE_DIR}/LICENSE)
-set(CPACK_RESOURCE_FILE_README \${CMAKE_CURRENT_SOURCE_DIR}/README.md)
-EOF
-```
-
-```sh
-$ cat >> CPackConfig.cmake <<EOF
-
-set(CPACK_RPM_PACKAGE_NAME "print-devel")
-set(CPACK_RPM_PACKAGE_LICENSE "MIT")
-set(CPACK_RPM_PACKAGE_GROUP "print")
-set(CPACK_RPM_CHANGELOG_FILE \${CMAKE_CURRENT_SOURCE_DIR}/ChangeLog.md)
-set(CPACK_RPM_PACKAGE_RELEASE 1)
-EOF
-```
-
-```sh
-$ cat >> CPackConfig.cmake <<EOF
-
-set(CPACK_DEBIAN_PACKAGE_NAME "libprint-dev")
-set(CPACK_DEBIAN_PACKAGE_PREDEPENDS "cmake >= 3.0")
-set(CPACK_DEBIAN_PACKAGE_RELEASE 1)
-EOF
-```
-
-```sh
-$ cat >> CPackConfig.cmake <<EOF
-
-include(CPack)
-EOF
-```
-
-```sh
-$ cat >> CMakeLists.txt <<EOF
-
-include(CPackConfig.cmake)
-EOF
-```
-
-```sh
-$ gsed -i 's/lab05/lab06/g' README.md
-```
-
-```sh
-$ git add .
-$ git commit -m"added cpack config"
-$ git tag v0.1.0.0
-$ git push origin master --tags
-```
-
-```sh
-$ travis login --auto
-$ travis enable
-```
-
-```sh
-$ cmake -H. -B_build
-$ cmake --build _build
-$ cd _build
-$ cpack -G "TGZ"
-$ cd ..
-```
-
-```sh
-$ cmake -H. -B_build -DCPACK_GENERATOR="TGZ"
-$ cmake --build _build --target package
-```
-
-```sh
-$ mkdir artifacts
-$ mv _build/*.tar.gz artifacts
-$ tree artifacts
-```
-
-## Report
-
-```sh
-$ popd
-$ export LAB_NUMBER=06
-$ git clone https://github.com/tp-labs/lab${LAB_NUMBER} tasks/lab${LAB_NUMBER}
-$ mkdir reports/lab${LAB_NUMBER}
-$ cp tasks/lab${LAB_NUMBER}/README.md reports/lab${LAB_NUMBER}/REPORT.md
-$ cd reports/lab${LAB_NUMBER}
-$ edit REPORT.md
-$ gist REPORT.md
-```
-
 ## Homework
 
 После того, как вы настроили взаимодействие с системой непрерывной интеграции,</br>
 обеспечив автоматическую сборку и тестирование ваших изменений, стоит задуматься</br>
-о создание пакетов для измениний, которые помечаются тэгами (см. вкладку [releases](https://github.com/tp-labs/lab06/releases)).</br>
+о создание пакетов для измениний, которые помечаются тэгами.</br>
 Пакет должен содержать приложение _solver_ из [предыдущего задания](https://github.com/tp-labs/lab03#задание-1)
 Таким образом, каждый новый релиз будет состоять из следующих компонентов:
 - архивы с файлами исходного кода (`.tar.gz`, `.zip`)
 - пакеты с бинарным файлом _solver_ (`.deb`, `.rpm`, `.msi`, `.dmg`)
-
-В качестве подсказки:
-```sh
-$ cat .travis.yml
-os: osx
-script:
-...
-- cpack -G DragNDrop # dmg
-
-$ cat .travis.yml
-os: linux
-script:
-...
-- cpack -G DEB # deb
-
-$ cat .travis.yml
-os: linux
-addons:
-  apt:
-    packages:
-    - rpm
-script:
-...
-- cpack -G RPM # rpm
-
-$ cat appveyor.yml
-platform:
-- x86
-- x64
-build_script:
-...
-- cpack -G WIX # msi
-```
-
 Для этого нужно добавить ветвление в конфигурационные файлы для **CI** со следующей логикой:</br>
 если **commit** помечен тэгом, то необходимо собрать пакеты (`DEB, RPM, WIX, DragNDrop, ...`) </br>
-и разместить их на сервисе **GitHub**. (см. пример для [Travi CI](https://docs.travis-ci.com/user/deployment/releases))</br>
+и разместить их на сервисе **GitHub**.</br>
 
-## Links
+Дополняем корневой CMakeLists.txt</br>
+1) указываем куда положить исполняемые файлы и статические, динамические библиотеки:
+```br
+install(TARGETS solver
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+)
+```
+2) указываем имя проекта, версию, описание, имя и почту создателя
+```br
+set(CPACK_PACKAGE_NAME "solver")
+set(CPACK_PACKAGE_VERSION "1.0.0")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Quadratic equation solver")
+set(CPACK_PACKAGE_VENDOR "bryansevnikolay-netizen")
+set(CPACK_PACKAGE_CONTACT "bryansev.nikolay@gmail.com")
+```
+3) указываем нужные типы пакетов и зависимости для каждого из них
+```br
+set(CPACK_GENERATOR "DEB;RPM;DragNDrop;WIX;ZIP;TGZ")
 
-- [DMG](https://cmake.org/cmake/help/latest/module/CPackDMG.html)
-- [DEB](https://cmake.org/cmake/help/latest/module/CPackDeb.html)
-- [RPM](https://cmake.org/cmake/help/latest/module/CPackRPM.html)
-- [NSIS](https://cmake.org/cmake/help/latest/module/CPackNSIS.html)
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.28)")
 
+set(CPACK_RPM_PACKAGE_REQUIRES "glibc >= 2.28")
+
+set(CPACK_WIX_UPGRADE_GUID "809da3ca-e1c5-4304-9375-31ef0b5d16d3")
+
+set(CPACK_DMG_VOLUME_NAME "Solver Installer")
+set(CPACK_DMG_FORMAT "UDBZ")
+```
+4) настройка архивов с исходниками
+```br
+set(CPACK_SOURCE_GENERATOR "TGZ;ZIP")
+set(CPACK_SOURCE_IGNORE_FILES 
+    "/build/"
+    "/.git/"
+    ".*~$"
+    "/.github/"
+)
+```
+5) активация CPack
+```br
+include(CPack)
+```
+Создаем файл сборки</br>
+1) вводим название сборки и условие работы (только с версиямм)
+```br
+name: Build, Test and Package
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main, master ]
+```
+2) создание матрицы с различными ОС и указание их параметров: название, типы и расширения пакетов, необходимость RPM
+```br
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - name: Linux DEB
+            os: ubuntu-latest
+            cpack_generator: DEB
+            package_ext: deb
+            need_rpm: false
+
+          - name: Linux RPM
+            os: ubuntu-latest
+            cpack_generator: RPM
+            package_ext: rpm
+            need_rpm: true
+
+          - name: Windows MSI
+            os: windows-latest
+            cpack_generator: WIX
+            package_ext: msi
+            need_rpm: false
+
+          - name: macOS DMG
+            os: macos-latest
+            cpack_generator: DragNDrop
+            package_ext: dmg
+            need_rpm: false
+```
+3) установка кода, RPM (при необходимости), конфигурация CMake и сборка проекта с использованием нескольких ядер в зависимости от ОС
+```br
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install RPM
+        if: matrix.need_rpm
+        run: sudo apt-get update && sudo apt-get install -y rpm
+
+      - name: Configure CMake
+        run: cmake -B build -S .
+
+      - name: Build
+        run: |
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            cmake --build build --config Release -j$(nproc)
+          elif [[ "${{ runner.os }}" == "macOS" ]]; then
+            cmake --build build --config Release -j$(sysctl -n hw.ncpu)
+          else
+            cmake --build build --config Release -j$(nproc)
+          fi
+        shell: bash
+```
+4) создание пакетов и их загрузка в релиз
+```br
+      - name: Create package 
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          cd build
+          cpack -G ${{ matrix.cpack_generator }}
+
+      - name: Upload to Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/*.${{ matrix.package_ext }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+5) задание для исходников
+```br
+  sources:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create source packages
+        run: |
+          git archive --format=zip --output solver-source.zip HEAD
+          git archive --format=tar.gz --output solver-source.tar.gz HEAD
+      - name: Upload sources
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            solver-source.zip
+            solver-source.tar.gz
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
 ```
 Copyright (c) 2015-2021 The ISC Authors
 ```
